@@ -55,90 +55,41 @@ Projekt realizowany jest przez 7-osobowy zespół. Proponowany podział zadań:
 7. Po osiągnięciu docelowych parametrów proces przechodzi w fazę stabilizacji.
 8. Po zakończeniu wędzenia system generuje raport i zapisuje dane w chmurze.
 
-┌────────────────────────┐
-│      Użytkownik        │
-│ (Panel chmurowy lub I/O│
-│     przycisk START)    │
-└──────────┬─────────────┘
-           │
-           ▼
-┌────────────────────────┐
-│  Wysłanie komendy START│
-│  do chmury (LoRaWAN)   │
-└──────────┬─────────────┘
-           │
-           ▼
-┌────────────────────────────┐
-│       CHMURA (LOGIKA)      │
-│ Sprawdzenie warunków:      │
-│  - Czy drzwi są zamknięte? │
-│  - Czy czujniki działają?  │
-│  - Czy wybrano tryb pracy? │
-└──────────┬─────────────────┘
-           │
-     ┌─────┴──────────────────────────┐
-     │                                │
-     ▼                                ▼
-┌───────────────┐           ┌──────────────────────────────┐
-│ Warunki NIE OK│           │  Warunki SPEŁNIONE           │
-│               │           │ (drzwi zamknięte, wszystko OK)│
-│ → wysłanie do │           │                              │
-│ panelu flagi  │           │ → wysłanie do ESP32 flagi    │
-│ STATUS=ERROR  │           │ START_PROCESS=TRUE           │
-│               │           │                              │
-│ → panel chmurowy            │                              │
-│ pokazuje komunikaty:       │                              │
-│ "Zamknij drzwi", "Błąd"    │                              │
-└───────────────┘           └──────────┬───────────────────┘
-                                       │
-                                       ▼
-                         ┌──────────────────────────────┐
-                         │        ESP32 (symulator)     │
-                         │------------------------------│
-                         │ - Odbiera komendę START      │
-                         │ - Wybiera tryb wędzenia:     │
-                         │   * Tryb 1 – Ciepłe (40–60°C,│
-                         │     wilg. 60–80%)            │
-                         │   * Tryb 2 – Gorące (60–90°C,│
-                         │     wilg. 55–70%)            │
-                         │ - Symuluje proces:           │
-                         │   → stopniowe nagrzewanie    │
-                         │   → zmniejszanie wilgotności │
-                         │   → generowanie dymu         │
-                         │ - Wysyła co 1 min:           │
-                         │   TEMP, HUMID, STATUS        │
-                         └──────────┬───────────────────┘
-                                    │
-                                    ▼
-                      ┌──────────────────────────────┐
-                      │        CHMURA (ANALIZA)      │
-                      │------------------------------│
-                      │ - Odbiera dane z ESP32       │
-                      │ - Aktualizuje wykresy        │
-                      │   (temp., wilg., czas, stan) │
-                      │ - Wyświetla status procesu:  │
-                      │   * ROZGRZEWANIE             │
-                      │   * STABILIZACJA             │
-                      │   * ZAKOŃCZONE               │
-                      │ - Generuje alerty, gdy:      │
-                      │   * temp. poza zakresem      │
-                      │   * wilgotność za niska/wysoka│
-                      └──────────┬───────────────────┘
-                                 │
-                                 ▼
-                   ┌──────────────────────────────┐
-                   │     PANEL UŻYTKOWNIKA         │
-                   │-------------------------------│
-                   │ - Wskaźniki LED / grafika:    │
-                   │   * Czerwony – NIE GOTOWY     │
-                   │   * Pomarańczowy – TRWA PROCES│
-                   │   * Zielony – GOTOWE          │
-                   │ - Wykresy czasu rzeczywistego │
-                   │ - Informacje o etapie procesu │
-                   │ - Przycisk STOP / RAPORT       │
-                   └───────────────────────────────┘
+```mermaid
+graph TD
+    subgraph START - Inicjacja
+        A[Użytkownik klika przycisk Start na Wyspie IO] --> B{Wyspa IO wysyła żądanie do Chmury};
+    end
 
+    subgraph WALIDACJA - Sprawdzenie Warunków
+        B --> C{Chmura otrzymuje żądanie};
+        C -->|NIE MOŻNA WYKONAĆ - Warunek niespełniony| D[Chmura zapala Czerwoną Lampkę Statusu (Wizualizacja)];
+        D --> E[Chmura wysyła żądanie Sprawdzenia Statusu do Wyspy IO];
+        E --> F{Moduł IO sprawdza: Drzwi/Okna zamknięte?};
+        F -->|NIE| G[Moduł IO zapala Czerwoną Lampkę (Błąd/Oczekiwanie)];
+        F -->|TAK| H[Moduł IO zapala Zieloną Lampkę (Gotowość)];
+    end
 
+    subgraph PROCES - Symulacja
+        H --> I{Chmura wysyła flagę START do ESP32};
+        I --> J[ESP32 rozpoczyna symulację procesu];
+
+        subgraph Monitoring i Aktualizacja Statusu
+            K[ESP32: Generowanie i wysyłanie flag statusu (Etap N)] --> L(Chmura: Aktualizacja paska postępu/statusu);
+            M[Czujniki: Pomiar Temp. i Wilgotności] --> L;
+            L --> N[Chmura wysyła komendę LED dla Etapu N do Modułu IO];
+            N --> O[Moduł IO: zaświeca odpowiedni LED dla Etapu Procesu];
+        end
+        O --> K; % Pętla: Kolejny Etap
+
+    end
+
+    subgraph KONIEC
+        K -->|Flaga KONIEC PROCESU| P[Chmura: Aktualizacja paska postępu na 100%];
+        P --> Q[Chmura wysyła komendę do Modułu IO];
+        Q --> R[Moduł IO: zaświeca LED KONIEC PROCESU];
+    end
+```
 
 ## 6. Instalacja
 
