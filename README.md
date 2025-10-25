@@ -55,6 +55,91 @@ Projekt realizowany jest przez 7-osobowy zespół. Proponowany podział zadań:
 7. Po osiągnięciu docelowych parametrów proces przechodzi w fazę stabilizacji.
 8. Po zakończeniu wędzenia system generuje raport i zapisuje dane w chmurze.
 
+┌────────────────────────┐
+│      Użytkownik        │
+│ (Panel chmurowy lub I/O│
+│     przycisk START)    │
+└──────────┬─────────────┘
+           │
+           ▼
+┌────────────────────────┐
+│  Wysłanie komendy START│
+│  do chmury (LoRaWAN)   │
+└──────────┬─────────────┘
+           │
+           ▼
+┌────────────────────────────┐
+│       CHMURA (LOGIKA)      │
+│ Sprawdzenie warunków:      │
+│  - Czy drzwi są zamknięte? │
+│  - Czy czujniki działają?  │
+│  - Czy wybrano tryb pracy? │
+└──────────┬─────────────────┘
+           │
+     ┌─────┴──────────────────────────┐
+     │                                │
+     ▼                                ▼
+┌───────────────┐           ┌──────────────────────────────┐
+│ Warunki NIE OK│           │  Warunki SPEŁNIONE           │
+│               │           │ (drzwi zamknięte, wszystko OK)│
+│ → wysłanie do │           │                              │
+│ panelu flagi  │           │ → wysłanie do ESP32 flagi    │
+│ STATUS=ERROR  │           │ START_PROCESS=TRUE           │
+│               │           │                              │
+│ → panel chmurowy            │                              │
+│ pokazuje komunikaty:       │                              │
+│ "Zamknij drzwi", "Błąd"    │                              │
+└───────────────┘           └──────────┬───────────────────┘
+                                       │
+                                       ▼
+                         ┌──────────────────────────────┐
+                         │        ESP32 (symulator)     │
+                         │------------------------------│
+                         │ - Odbiera komendę START      │
+                         │ - Wybiera tryb wędzenia:     │
+                         │   * Tryb 1 – Ciepłe (40–60°C,│
+                         │     wilg. 60–80%)            │
+                         │   * Tryb 2 – Gorące (60–90°C,│
+                         │     wilg. 55–70%)            │
+                         │ - Symuluje proces:           │
+                         │   → stopniowe nagrzewanie    │
+                         │   → zmniejszanie wilgotności │
+                         │   → generowanie dymu         │
+                         │ - Wysyła co 1 min:           │
+                         │   TEMP, HUMID, STATUS        │
+                         └──────────┬───────────────────┘
+                                    │
+                                    ▼
+                      ┌──────────────────────────────┐
+                      │        CHMURA (ANALIZA)      │
+                      │------------------------------│
+                      │ - Odbiera dane z ESP32       │
+                      │ - Aktualizuje wykresy        │
+                      │   (temp., wilg., czas, stan) │
+                      │ - Wyświetla status procesu:  │
+                      │   * ROZGRZEWANIE             │
+                      │   * STABILIZACJA             │
+                      │   * ZAKOŃCZONE               │
+                      │ - Generuje alerty, gdy:      │
+                      │   * temp. poza zakresem      │
+                      │   * wilgotność za niska/wysoka│
+                      └──────────┬───────────────────┘
+                                 │
+                                 ▼
+                   ┌──────────────────────────────┐
+                   │     PANEL UŻYTKOWNIKA         │
+                   │-------------------------------│
+                   │ - Wskaźniki LED / grafika:    │
+                   │   * Czerwony – NIE GOTOWY     │
+                   │   * Pomarańczowy – TRWA PROCES│
+                   │   * Zielony – GOTOWE          │
+                   │ - Wykresy czasu rzeczywistego │
+                   │ - Informacje o etapie procesu │
+                   │ - Przycisk STOP / RAPORT       │
+                   └───────────────────────────────┘
+
+
+
 ## 6. Instalacja
 
 1. Skonfiguruj czujniki WisBlock Kit i podłącz je do odpowiednich pinów mikrokontrolera.
