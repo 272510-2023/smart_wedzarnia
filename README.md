@@ -26,16 +26,15 @@ Projekt realizowany jest przez 7-osobowy zespół. Proponowany podział zadań:
 
 ## 4. Przebieg procesu wędzenia (symulacja)
 
-========================================
-1. INICJACJA PROCESU (Moduł I/O)
-========================================
+
+**1. INICJACJA PROCESU (Moduł I/O)
+
 - Użytkownik naciska przycisk START.
 - Moduł I/O wysyła sygnał inicjujący do Chmury.
 - Chmura wie, że należy rozpocząć weryfikację warunków początkowych.
 
-========================================
-2. WALIDACJA WARUNKÓW (Chmura ↔ Moduł I/O)
-========================================
+**2. WALIDACJA WARUNKÓW (Chmura ↔ Moduł I/O)
+
 - Chmura ustawia czerwoną lampkę statusu (Oczekiwanie) w wizualizacji.
 - Chmura wysyła do Modułu I/O komendę: "Sprawdź czujniki drzwi i okien".
 - Moduł I/O odczytuje stany czujników i zwraca status do Chmury.
@@ -45,15 +44,13 @@ Projekt realizowany jest przez 7-osobowy zespół. Proponowany podział zadań:
 - Jeżeli warunek spełniony:
     - Moduł I/O zapala zieloną diodę LED (Gotowość do rozpoczęcia)
 
-========================================
-3. START SYMULACJI (Chmura → ESP32)
-========================================
+**3. START SYMULACJI (Chmura → ESP32)
+
 - Chmura wysyła do ESP32 flagę START oraz tryb wędzenia (np. Tryb 1: Ciepłe)
 - ESP32 interpretuje dane i rozpoczyna symulację procesu
 
-========================================
-4. MONITORING I KONTROLA ETAPÓW (Pętla)
-========================================
+**4. MONITORING I KONTROLA ETAPÓW (Pętla)
+
 Pętla działa do zakończenia procesu:
 
     A. Pomiar danych środowiskowych:
@@ -67,9 +64,7 @@ Pętla działa do zakończenia procesu:
     C. Sygnalizacja świetlna:
         - Chmura wysyła komendę do Modułu I/O, aby zapalił LED dla bieżącego etapu
 
-========================================
-5. ZAKOŃCZENIE PROCESU
-========================================
+**5. ZAKOŃCZENIE PROCESU
 - ESP32 wysyła flagę KONIEC_PROCESU do Chmury
 - Chmura:
     - Ustawia pasek postępu na 100%
