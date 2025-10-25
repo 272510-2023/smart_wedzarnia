@@ -26,32 +26,55 @@ Projekt realizowany jest przez 7-osobowy zespół. Proponowany podział zadań:
 
 ## 4. Przebieg procesu wędzenia (symulacja)
 
-1.  **INICJACJA PROCESU (Moduł I/O)**
-    * Użytkownik klika przycisk START (Moduł I/O).
-    * Moduł I/O → Sygnał Inicjujący do **Chmury**.
+========================================
+1. INICJACJA PROCESU (Moduł I/O)
+========================================
+- Użytkownik naciska przycisk START.
+- Moduł I/O wysyła sygnał inicjujący do Chmury.
+- Chmura wie, że należy rozpocząć weryfikację warunków początkowych.
 
-2.  **WALIDACJA WARUNKÓW (Chmura ↔ Moduł I/O)**
-    * Chmura wyświetla **Czerwoną Lampkę Statusu** na wizualizacji (Oczekiwanie).
-    * Chmura → Komenda: Sprawdź Czujniki (Drzwi/Okna) do **Modułu I/O**.
-    * Moduł I/O → Status do Chmury.
-    * **IF Warunek Niespełniony:** Moduł I/O zapala **Czerwoną Diodę LED** (Wstrzymanie).
-    * **IF Warunek Spełniony:** Moduł I/O zapala **Zieloną Diodę LED** (Gotowość).
+========================================
+2. WALIDACJA WARUNKÓW (Chmura ↔ Moduł I/O)
+========================================
+- Chmura ustawia czerwoną lampkę statusu (Oczekiwanie) w wizualizacji.
+- Chmura wysyła do Modułu I/O komendę: "Sprawdź czujniki drzwi i okien".
+- Moduł I/O odczytuje stany czujników i zwraca status do Chmury.
 
-3.  **START SYMULACJI (Chmura → ESP32)**
-    * Chmura → Flaga **START** + Tryb Wędzenia (np. Tryb 1: Ciepłe) do **Mikrokontrolera (ESP32)**.
-    * ESP32 rozpoczyna symulację procesu.
+- Jeżeli warunek niespełniony:
+    - Moduł I/O zapala czerwoną diodę LED (Wstrzymanie procesu)
+- Jeżeli warunek spełniony:
+    - Moduł I/O zapala zieloną diodę LED (Gotowość do rozpoczęcia)
 
-4.  **MONITORING I KONTROLA ETAPÓW (Pętla)**
-    * **A. Pomiar Danych:** WisBlock (Czujniki) → Dane Środowiskowe (Temp, Wilgotność, Ciśnienie, QA) do **Chmury**.
-    * **B. Status Procesu:** ESP32 → Flaga Statusu (`ETAP_N`) do **Chmury**.
-    * **C. Wizualizacja:** Chmura aktualizuje pasek postępu i wykresy.
-    * **D. Sygnalizacja Etapu:** Chmura → Komenda: Zapal LED dla Etapu N do **Modułu I/O**.
+========================================
+3. START SYMULACJI (Chmura → ESP32)
+========================================
+- Chmura wysyła do ESP32 flagę START oraz tryb wędzenia (np. Tryb 1: Ciepłe)
+- ESP32 interpretuje dane i rozpoczyna symulację procesu
 
-5.  **ZAKOŃCZENIE PROCESU**
-    * ESP32 → Flaga **KONIEC PROCESU** do **Chmury**.
-    * Chmura → Pasek postępu na **100%**, Generowanie Raportu.
-    * Chmura → Komenda: Zapal **Zielony, Stały LED** (Koniec) do **Modułu I/O**.
+========================================
+4. MONITORING I KONTROLA ETAPÓW (Pętla)
+========================================
+Pętla działa do zakończenia procesu:
 
+    A. Pomiar danych środowiskowych:
+        - Czujniki WisBlock przesyłają dane: temperatura, wilgotność, ciśnienie, QA do Chmury
+        - Chmura agreguje dane i aktualizuje wykresy
+
+    B. Status procesu:
+        - ESP32 wysyła flagę STATUS_ETAP_N do Chmury
+        - Chmura aktualizuje pasek postępu i wizualizację etapów
+
+    C. Sygnalizacja świetlna:
+        - Chmura wysyła komendę do Modułu I/O, aby zapalił LED dla bieżącego etapu
+
+========================================
+5. ZAKOŃCZENIE PROCESU
+========================================
+- ESP32 wysyła flagę KONIEC_PROCESU do Chmury
+- Chmura:
+    - Ustawia pasek postępu na 100%
+    - Generuje raport podsumowujący proces
+- Chmura wysyła do Modułu I/O komendę: zapal zielony, stały LED (koniec procesu)
 
 ## 5. Instalacja
 
