@@ -1,0 +1,2 @@
+https://APC4UDNP426OI.cups.lorawan.eu-central-1.amazonaws.com:443 -- CUPS
+wss://APC4UDNP426OI.lns.lorawan.eu-central-1.amazonaws.com:443 -- LNS
