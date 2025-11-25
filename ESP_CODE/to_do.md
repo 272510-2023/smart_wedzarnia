@@ -1,6 +1,13 @@
-Aktualnie do zrobnienia zastało 
-1. Zaaplinowanie obłsugi błedów sterowania 
-2. Obłsługę bezpieczengo wygaszania przy zaniku połaczenia z chmurą 
-3. Sprawdzanie poprawności ramek przychodzących danych 
-4. Konfigurowanie ręcze w celu symualcji aktualnych proecsów za pomocą pontecjometur bądź endker a
-5. Obłsuga wysiwetlacza LCD w celu wyswuetlania wynikow 
+Aktualnie do zrobienia:
+
+1. Zaaplikowanie obsługi błedów sterowania - zrobione:
+	- przekroczenie określonych przedziałów dla wartości temperatury i wilgotności
+	- jeśli w trakcie procesu sterowania otworzą się drzwi, należy natychmiast wygasić proces sterowania
+   Potencjalnie jeszcze do zrobienia - nieosiągnięcie temperatury w zadanym czasie
+
+2. Obsługę bezpiecznego wygaszania przy zaniku połaczenia z chmurą 
+
+3. Sprawdzanie poprawności ramek przychodzących danych - zrobione
+
+4. Konfigurowanie ręczne w celu symulacji aktualnych proecsów za pomocą pontecjometru bądź endkera
+5. Obłsuga wyświetlacza LCD w celu wyświetlania wyników 

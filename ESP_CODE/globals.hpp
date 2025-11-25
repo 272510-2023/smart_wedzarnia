@@ -29,7 +29,7 @@ enum humid_state {
     HUMIDIFY_OFF
 };
 
-enum type_of_frame{
+enum type_of_frame {
     NO_NEW_FRAME = 0,
     START_FRAME = 1,
     UPDATE_FRAME = 2
@@ -53,23 +53,37 @@ enum type_of_frame{
 #define UPDATE_FRAME_CURRENT_TEMPERATURE_PLACE (UPDATE_FRAME_CURRENT_HUMIDITY_PLACE + 1)
 #define UPDATE_FRAME_DOOR_STATUS_PLACE (UPDATE_FRAME_CURRENT_TEMPERATURE_PLACE + 2)
 
+#define START_FRAME_MIN_LENGTH (START_FRAME_TIME_OF_SMOKING_PLACE + 2)
+#define UPDATE_MIN_FRAME_LENGTH (UPDATE_FRAME_DOOR_STATUS_PLACE + 1)
+
+// ----------------- ZAKRESY -------------------
+
+#define TEMP_MIN_ALLOWED   400      // °C
+#define TEMP_MAX_ALLOWED   1200   // °C
+
+#define HUMID_MIN_ALLOWED  0      // 0%
+#define HUMID_MAX_ALLOWED  100    // 100%
+
+#define DOOR_CLOSED_VALUE  0
+#define DOOR_OPEN_VALUE    1
+
 // ----------------- STRUKTURY -----------------
-struct update_value{
+struct update_value {
     int16_t current_temperature;
     uint8_t current_humidity;
     uint8_t door_status;
 };
 
-struct process_values{
+struct process_values {
     uint8_t command;
     char meat_name[MEAT_NAME_LENGTH];
     int16_t target_temperature;
-    uint8_t target_humidity; 
+    uint8_t target_humidity;
     uint16_t time_of_smoking; // this time need to be received in secundes 
 
 };
 
-struct process{
+struct process {
     struct update_value Update_values;
     struct process_values Process_values;
     enum state_machine Machine_State;
