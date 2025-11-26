@@ -295,48 +295,41 @@ void send_lora_frame(void)
   float pressure = bme.pressure;         // hPa
   float gas = bme.gas_resistance;       // KOhms
 
-  //Serial.printf("Temp: %.2f °C, Hum: %.2f %%, Pres: %.2f hPa, Gas: %.2f KΩ\n", temperature, humidity, pressure, gas);
-
   uint32_t i = 0;
   memset(m_lora_app_data.buffer, 0, LORAWAN_APP_DATA_BUFF_SIZE);
   m_lora_app_data.port = gAppPort;
 
-  // Każdą wartość zapakujemy jako 2 bajty (uint16_t) po przeskalowaniu
-  // Zakresy:
-  //  - temp: np. -40..85°C -> *100
-  //  - hum: 0..100% -> *100
-  //  - pres: np. 300..1100 hPa -> *10
-  //  - gas: np. 0..1000 KOhms -> *10
-
   int16_t temp_int = (int16_t)(temperature * 100);  // 2 bajty
   uint16_t hum_int = (uint16_t)(humidity * 100);
-  uint16_t pres_int = (uint16_t)(pressure * 100);
-  uint16_t gas_int = (uint16_t)(gas);
-
+  uint32_t pres_int = (uint32_t)(pressure * 100);
+  uint32_t gas_int = (uint32_t)(gas);
+  //Serial.printf("Temp: %.2f °C, Hum: %.2f %%, Pres: %.2f hPa, Gas: %.2f KΩ\n", temperature, humidity, pressure, gas);
   // maker always 1
   m_lora_app_data.buffer[i++] = 0x01;
 
   // --- Temperature ---
-  m_lora_app_data.buffer[i++] = highByte(temp_int);
-  m_lora_app_data.buffer[i++] = lowByte(temp_int);
+  m_lora_app_data.buffer[i++] = (uint8_t)(temp_int >> 8);
+  m_lora_app_data.buffer[i++] = (uint8_t)(temp_int);
 
   // --- Humidity ---
-  m_lora_app_data.buffer[i++] = highByte(hum_int);
-  m_lora_app_data.buffer[i++] = lowByte(hum_int);
+  m_lora_app_data.buffer[i++] = (uint8_t)(hum_int >> 8);
+  m_lora_app_data.buffer[i++] = (uint8_t)(hum_int);
 
   // --- Pressure (4 bytes, MSB first) ---
-  m_lora_app_data.buffer[i++] = (pres_int >> 24) & 0xFF;
-  m_lora_app_data.buffer[i++] = (pres_int >> 16) & 0xFF;
-  m_lora_app_data.buffer[i++] = (pres_int >> 8) & 0xFF;
-  m_lora_app_data.buffer[i++] = pres_int & 0xFF;
+  m_lora_app_data.buffer[i++] = (uint8_t)(pres_int >> 24) & 0xFF;
+  m_lora_app_data.buffer[i++] = (uint8_t)(pres_int >> 16) & 0xFF;
+  m_lora_app_data.buffer[i++] = (uint8_t)(pres_int >> 8) & 0xFF;
+  m_lora_app_data.buffer[i++] = (uint8_t)pres_int & 0xFF;
 
   // --- Gas (4 bytes, MSB first) ---
-  m_lora_app_data.buffer[i++] = (gas_int >> 24) & 0xFF;
-  m_lora_app_data.buffer[i++] = (gas_int >> 16) & 0xFF;
-  m_lora_app_data.buffer[i++] = (gas_int >> 8) & 0xFF;
-  m_lora_app_data.buffer[i++] = gas_int & 0xFF;
+  m_lora_app_data.buffer[i++] = (uint8_t)(gas_int >> 24) & 0xFF;
+  m_lora_app_data.buffer[i++] = (uint8_t)(gas_int >> 16) & 0xFF;
+  m_lora_app_data.buffer[i++] = (uint8_t)(gas_int >> 8) & 0xFF;
+  m_lora_app_data.buffer[i++] = (uint8_t)gas_int & 0xFF;
 
   m_lora_app_data.buffsize = i;
+
+  
   // Wysyłka przez LoRaWAN
   lmh_error_status error = lmh_send(&m_lora_app_data, g_CurrentConfirm);
   if (error == LMH_SUCCESS)
