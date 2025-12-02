@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>IoT Dashboard</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        .card { padding: 20px; border-radius: 10px; background: #f5f5f5; margin-bottom: 20px; }
+        .status-open { color: green; font-weight: bold; }
+        .status-closed { color: red; font-weight: bold; }
+    </style>
+</head>
+<body>
+
+<h1>IoT Dashboard</h1>
+
+<div class="card">
+    <h2>Status drzwi</h2>
+    <p id="doorStatusText" class="status-closed">Ładowanie...</p>
+    <p id="alarmText" style="display:none;">Alarm: <span id="alarmValue">0</span></p>
+</div>
+
+<div class="card">
+    <h2>Wykres temperatury (°C)</h2>
+    <canvas id="tempChart"></canvas>
+</div>
+
+<div class="card">
+    <h2>Wykres wilgotności (%)</h2>
+    <canvas id="humChart"></canvas>
+</div>
+
+<div class="card">
+    <h2>Wykres ciśnienia (hPa)</h2>
+    <canvas id="presChart"></canvas>
+</div>
+
+<script>
+    // 1. Inicjalizacja pustych wykresów (dane przyjdą z API)
+    const ctxTemp = document.getElementById("tempChart").getContext('2d');
+    const ctxHum = document.getElementById("humChart").getContext('2d');
+    const ctxPres = document.getElementById("presChart").getContext('2d');
+
+    // Funkcja pomocnicza do tworzenia configu wykresu
+    function createChartConfig(label, color) {
+        return {
+            type: "line",
+            data: {
+                labels: [], // Puste na start
+                datasets: [{
+                    label: label,
+                    data: [], // Puste na start
+                    borderColor: color,
+                    borderWidth: 2,
+                    pointRadius: 0,
+                    fill: false
+                }]
+            },
+            options: { animation: false } // Wyłączamy animację przy odświeżaniu, żeby nie "skakało"
+        };
+    }
+
+    // Tworzymy obiekty wykresów i przypisujemy do zmiennych
+    const tempChart = new Chart(ctxTemp, createChartConfig("Temperatura (°C)", "red"));
+    const humChart = new Chart(ctxHum, createChartConfig("Wilgotność (%)", "blue"));
+    const presChart = new Chart(ctxPres, createChartConfig("Ciśnienie (hPa)", "green"));
+
+    // 2. Funkcja pobierająca dane i aktualizująca dashboard
+    function updateDashboard() {
+        fetch('/api/dashboard-data/')  // <-- Tutaj wpisz URL do swojego widoku JSON
+            .then(response => response.json())
+            .then(data => {
+                
+                // Aktualizacja Wykresów
+                // Temperatura
+                tempChart.data.labels = data.timestamps;
+                tempChart.data.datasets[0].data = data.temperatures;
+                tempChart.update();
+
+                // Wilgotność
+                humChart.data.labels = data.timestamps;
+                humChart.data.datasets[0].data = data.humidities;
+                humChart.update();
+
+                // Ciśnienie
+                presChart.data.labels = data.timestamps;
+                presChart.data.datasets[0].data = data.pressures;
+                presChart.update();
+
+                // Aktualizacja Statusu Drzwi
+                const doorText = document.getElementById('doorStatusText');
+                if (data.door_open) {
+                    doorText.textContent = "🚪 Otwarte";
+                    doorText.className = "status-open";
+                } else {
+                    doorText.textContent = "🚪 Zamknięte";
+                    doorText.className = "status-closed";
+                }
+
+                // Aktualizacja Alarmu
+                const alarmContainer = document.getElementById('alarmText');
+                if (data.alarm > 0) {
+                    alarmContainer.style.display = 'block';
+                    document.getElementById('alarmValue').textContent = data.alarm;
+                } else {
+                    alarmContainer.style.display = 'none';
+                }
+            })
+            .catch(error => console.error('Błąd pobierania danych:', error));
+    }
+
+    // 3. Uruchomienie pętli
+    updateDashboard(); // Wywołaj raz na start
+    setInterval(updateDashboard, 1000); // Wywołuj co 1000ms (1 sekund)
+
+</script>
+
+</body>
+</html>
